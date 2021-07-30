@@ -2,11 +2,20 @@
 
 namespace App\Exceptions;
 
+use AElnemr\RestFullResponse\CoreJsonResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
+
+    use CoreJsonResponse;
+
     /**
      * A list of the exception types that are not reported.
      *
@@ -38,4 +47,37 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    public function render($request, Throwable $exception)
+    {
+
+        if ($request->wantsJson()) {
+            if ($exception instanceof AuthenticationException) {
+                return $this->unauthorized();
+            }
+
+            if($exception instanceof AuthorizationException){
+                return $this->forbidden();
+            }
+
+            if ($exception instanceof UserInvalidLoginException) {
+                return $this->badRequest(null, __('message.invalid_user'));
+            }
+
+            if($exception instanceof ModelNotFoundException) {
+                return $this->notFound(null, __('message.invalid_user'));
+            }
+
+            if ($exception instanceof ValidationException) {
+                return $this->invalidRequest($exception->validator->getMessageBag()->toArray());
+            }
+
+            if ($exception instanceof UnauthorizedException) {
+                return  $this->unauthorized(null, $exception->getMessage());
+            }
+
+        }
+        return parent::render($request, $exception);
+    }
+
 }
