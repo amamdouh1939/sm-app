@@ -14,6 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('1.0/login', [\App\Http\Controllers\API\V1\Auth\LoginController::class, 'issueToken'])->name('login');
+Route::post('1.0/register', [\App\Http\Controllers\API\V1\Auth\RegistrationController::class, 'register'])->name('register');
