@@ -6,18 +6,23 @@ use AElnemr\RestFullResponse\CoreJsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Resources\UserResource;
-use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
 {
     use CoreJsonResponse;
 
+    protected $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     public function register(RegistrationRequest $request)
     {
-        $user = User::create($request->only('name', 'email', 'password'));
-        $user->profile()->create($request->only('bio'));
-
+        $user = $this->userService->createUser($request->validated());
         return $this->created((new UserResource($user))->resolve());
     }
 }
